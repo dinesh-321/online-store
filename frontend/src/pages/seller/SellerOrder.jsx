@@ -4,6 +4,8 @@ import "./SellerDashboard.css";
 
 const SellerOrder = () => {
   const [orders, setOrders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 5;
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -19,6 +21,12 @@ const SellerOrder = () => {
     fetchOrders();
   }, []);
 
+  // Pagination logic
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const totalPages = Math.ceil(orders.length / ordersPerPage);
+
   return (
     <SellerLayout page="Seller-Order">
       <section className="orders py-5">
@@ -28,8 +36,8 @@ const SellerOrder = () => {
           {orders.length === 0 ? (
             <p>No orders found.</p>
           ) : (
-            <table className="table table-bordered table-striped">
-              <thead className="table-dark">
+            <table className="classic-table">
+              <thead>
                 <tr>
                   <th>User</th>
                   <th>Products</th>
@@ -40,8 +48,8 @@ const SellerOrder = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr key={order._id}>
+                {currentOrders.map((order, index) => (
+                  <tr key={order._id} className={index % 2 === 0 ? "even" : "odd"}>
                     <td>{order.userId}</td>
                     <td>
                       <ul className="mb-0">
@@ -55,12 +63,12 @@ const SellerOrder = () => {
                     <td>₹{order.amount}</td>
                     <td>
                       <span
-                        className={`badge ${
+                        className={`status-badge ${
                           order.status === "Pending"
-                            ? "bg-warning"
+                            ? "pending"
                             : order.status === "Completed"
-                            ? "bg-success"
-                            : "bg-danger"
+                            ? "completed"
+                            : "cancelled"
                         }`}
                       >
                         {order.status}
@@ -72,6 +80,21 @@ const SellerOrder = () => {
                 ))}
               </tbody>
             </table>
+          )}
+
+          {/* Pagination */}
+          {orders.length > ordersPerPage && (
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, idx) => (
+                <button
+                  key={idx + 1}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={currentPage === idx + 1 ? "active" : ""}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </section>

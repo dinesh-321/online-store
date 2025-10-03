@@ -444,7 +444,7 @@ const HeaderOne = ({ onRecommendedClick, onBrandsClick }) => {
               </li>
               <li className='border-right-item'>
                 <Link
-                  to='#'
+                  to='/admin'
                   className='text-white text-sm hover-text-decoration-underline'
                 >
                   <b>Admin</b>

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const SellerLayout = ({ children, page }) => {
      const navigate = useNavigate();
@@ -10,8 +11,16 @@ const SellerLayout = ({ children, page }) => {
     { name: "Seller Orders", href: "/sellerOrder" },
   ];
 
-  const logout = () => {
-    navigate('/');
+  const logout = async () => {
+    try {
+      await axios.get(`${process.env.REACT_APP_API_URL}/api/seller/logout`, {
+        withCredentials: true, // important for httpOnly cookies
+      });
+      navigate("/"); // redirect to login
+    } catch (err) {
+      console.error("Logout failed:", err);
+      navigate("/"); // fallback
+    }
   };
 
   // Determine background class based on page

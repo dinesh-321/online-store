@@ -25,6 +25,11 @@ import SellerProductList from "./pages/seller/SellerProductList";
 import BarcodeScanner from "./pages/seller/BarcodeScanner";
 import SellerOrder from "./pages/seller/SellerOrder";
 import SellerEditProduct from './pages/seller/SellerEditProduct';
+import AdminAuthForm from "./pages/admin/AdminAuthForm";
+import ProductList from "./pages/admin/ProductList";
+import OrderList from "./pages/admin/OrderList";
+import AdminProtectedRoute from "./pages/admin/AdminProtectedRoute";
+import SellerProtectedRoute from "./pages/seller/SellerProtectedRoute";
 
 function App() {
   return (
@@ -65,11 +70,16 @@ function App() {
         />
         {/* seller login register */}
        <Route exact path='/seller' element={<SellerAuthForm />} />
-       <Route exact path='/selleraddproduct' element={<SellerAddProduct />} />
-       <Route exact path='/SellerProductList' element={<SellerProductList />} />
-       <Route exact path='/barcodeScanner' element={<BarcodeScanner />} />
-       <Route exact path='/sellerOrder' element={<SellerOrder />} />
-       <Route exact path="/seller/edit-product/:id" element={<SellerEditProduct />} />
+       <Route exact path='/selleraddproduct' element={<SellerProtectedRoute><SellerAddProduct /></SellerProtectedRoute>} />
+       <Route exact path='/SellerProductList' element={<SellerProtectedRoute><SellerProductList /></SellerProtectedRoute>} />
+       <Route exact path='/barcodeScanner' element={<SellerProtectedRoute><BarcodeScanner /></SellerProtectedRoute>} />
+       <Route exact path='/sellerOrder' element={<SellerProtectedRoute><SellerOrder /></SellerProtectedRoute>} />
+       <Route exact path="/seller/edit-product/:id" element={<SellerProtectedRoute><SellerEditProduct /></SellerProtectedRoute>} />
+
+       {/* Admin login register */}
+       <Route exact path='/admin' element={<AdminAuthForm />} />
+        <Route exact path='/adminProductList' element={<AdminProtectedRoute><ProductList /></AdminProtectedRoute>} />
+        <Route exact path='/adminOrderList' element={<AdminProtectedRoute><OrderList /></AdminProtectedRoute>} />
        
        
       </Routes>

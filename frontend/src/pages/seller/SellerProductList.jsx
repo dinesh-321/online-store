@@ -10,8 +10,12 @@ const SellerProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editProduct, setEditProduct] = useState(null);
-  const [deletingId, setDeletingId] = useState(null); // ✅ track deleting
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
+
+  // ✅ Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 6; // adjust per page count
 
   const fetchProducts = async () => {
     try {
@@ -28,7 +32,6 @@ const SellerProductList = () => {
     fetchProducts();
   }, []);
 
-  // Handle Edit Save
   const handleSaveEdit = async () => {
     try {
       const { data } = await axios.put(
@@ -50,7 +53,6 @@ const SellerProductList = () => {
     }
   };
 
-  // ✅ Delete product
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
@@ -71,6 +73,12 @@ const SellerProductList = () => {
     }
   };
 
+  // ✅ Pagination logic
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(products.length / productsPerPage);
+
   return (
     <SellerLayout page="product-list">
       <div className="product-list-container">
@@ -81,46 +89,72 @@ const SellerProductList = () => {
         ) : products.length === 0 ? (
           <p>No products found.</p>
         ) : (
-          <div className="product-grid">
-            {products.map((product) => (
-              <div key={product._id} className="product-card">
-                <img
-                  src={product.image[0]}
-                  alt={product.name}
-                  className="product-image"
-                />
-                <h5 className="product-name">{product.name}</h5>
-                <p className="product-brand">{product.brand}</p>
-                <p className="product-price">
-                  Price: ₹{product.price}{" "}
-                  {product.offerPrice && (
-                    <span className="offer-price">Offer: ₹{product.offerPrice}</span>
-                  )}
-                </p>
-                <p className="product-stock">Stock: {product.stock}</p>
+          <>
+            <div className="product-grid">
+              {currentProducts.map((product) => (
+                <div key={product._id} className="product-card">
+                  <img
+                    src={product.image[0]}
+                    alt={product.name}
+                    className="product-image"
+                  />
+                  <h5 className="product-name">{product.name}</h5>
+                  <p className="product-brand">{product.brand}</p>
+                  <p className="product-price">
+                    Price: ₹{product.price}{" "}
+                    {product.offerPrice && (
+                      <span className="offer-price">Offer: ₹{product.offerPrice}</span>
+                    )}
+                  </p>
+                  <p className="product-stock">Stock: {product.stock}</p>
 
-                <div className="product-actions">
-                  <button
-                    className="btn btn-edit"
-                    onClick={() => navigate(`/seller/edit-product/${product._id}`)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-delete"
-                    disabled={deletingId === product._id}
-                    onClick={() => handleDelete(product._id)}
-                  >
-                    {deletingId === product._id ? "Deleting..." : "Delete"}
-                  </button>
+                  <div className="product-actions">
+                    <button
+                      className="btn btn-edit"
+                      onClick={() => navigate(`/seller/edit-product/${product._id}`)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-delete"
+                      disabled={deletingId === product._id}
+                      onClick={() => handleDelete(product._id)}
+                    >
+                      {deletingId === product._id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* ✅ Pagination Controls */}
+            <div className="pagination">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+              >
+                ◀ Prev
+              </button>
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index}
+                  className={currentPage === index + 1 ? "active" : ""}
+                  onClick={() => setCurrentPage(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+              >
+                Next ▶
+              </button>
+            </div>
+          </>
         )}
       </div>
 
-      {/* Edit Modal */}
       {editProduct && (
         <div className="modal-overlay">
           <div className="modal-box">

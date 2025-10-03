@@ -1,59 +1,116 @@
-import toast from 'react-hot-toast';
-import { useAppContext } from '../../context/AppContext'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import AdminLayout from "./AdminLayout";
+import "./AdminDashboard.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductList = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const { products, currency, axios, fetchProducts } = useAppContext();
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-    const toggleStock = async (id, inStock) => {
-        try{
-            const { data } = await axios.post('/api/product/stock', {id, inStock});
-            if(data.success){
-                fetchProducts();
-                toast.success(data.message);
-            }
-            else{
-                toast.error(data.message);
-            }
-        }
-        catch(error){
-            toast.error(error.message);
-        }
+  const fetchProducts = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/admin/getProductList`
+      );
+      if (data.success) setProducts(data.products || []);
+    } catch (error) {
+      toast.error("Error fetching products");
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-    return (
-        <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
-            <div className="w-full md:p-10 p-4">
-                <h2 className="pb-4 text-lg font-medium">All Products</h2>
-                <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-                    <table className="md:table-auto table-fixed w-full overflow-hidden">
-                        <thead className="text-gray-900 text-sm text-left">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold truncate">Product</th>
-                                <th className="px-4 py-3 font-semibold truncate">Category</th>
-                                <th className="px-4 py-3 font-semibold truncate hidden md:block">Selling Price</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-sm text-gray-500">
-                            {products.map((product) => (
-                                <tr key={product._id} className="border-t border-gray-500/20">
-                                    <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                                        <div className="border border-gray-300 rounded p-2">
-                                            <img src={product.image[0]} alt="Product" className="w-16" />
-                                        </div>
-                                        <span className="truncate max-sm:hidden w-full">{product.name}</span>
-                                    </td>
-                                    <td className="px-4 py-3">{product.category}</td>
-                                    <td className="px-4 py-3 max-sm:hidden">{currency}{product.offerPrice}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+  // pagination calculations
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+  return (
+    <AdminLayout page="product-list">
+      <div className="container mt-4">
+        <h4 className="mb-4">Product List</h4>
+
+        {loading ? (
+          <p>Loading products...</p>
+        ) : products.length === 0 ? (
+          <p>No products found.</p>
+        ) : (
+          <>
+            <table className="classic-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Price</th>
+                  <th>Offer Price</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentProducts.map((product, index) => (
+                  <tr key={product._id}>
+                    <td>{indexOfFirstItem + index + 1}</td>
+                    <td>
+                      <img
+                        src={product.image[0]}
+                        alt={product.name}
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    </td>
+                    <td>{product.name}</td>
+                    <td>{product.brand}</td>
+                    <td>₹{product.price}</td>
+                    <td>
+                      {product.offerPrice ? (
+                        <span style={{ color: "green" }}>₹{product.offerPrice}</span>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td>{product.stock}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, page) => (
+                <button
+                  key={page + 1}
+                  className={currentPage === page + 1 ? "active" : ""}
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  {page + 1}
+                </button>
+              ))}
             </div>
-        </div>
-    );
+          </>
+        )}
+      </div>
+      <ToastContainer position="top-right" autoClose={2000} />
+    </AdminLayout>
+  );
 };
 
-export default ProductList
+export default ProductList;

@@ -30,7 +30,8 @@ await connectCloudinary();
 
 // 🔑 Whitelisted origins
 const allowedOrigins = [
-  "http://localhost:3000",             // local React dev
+  "http://localhost:3000",           // local React dev
+  "http://localhost:4000",  
   "https://online-store-we06.onrender.com" // replace with actual Render frontend URL
 ];
 
