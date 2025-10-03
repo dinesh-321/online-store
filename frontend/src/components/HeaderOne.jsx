@@ -423,6 +423,24 @@ const HeaderOne = ({ onRecommendedClick, onBrandsClick }) => {
                   Contact Us
                 </Link>
               </li>
+              <li className='nav-menu__item'>
+                <Link
+                  to='/seller'
+                  className='nav-menu__link'
+                  onClick={() => setActiveIndex(null)}
+                >
+                  Become a Seller
+                </Link>
+              </li>
+              <li className='nav-menu__item'>
+                <Link
+                  to='/admin'
+                  className='nav-menu__link'
+                  onClick={() => setActiveIndex(null)}
+                >
+                  Admin
+                </Link>
+              </li>
             </ul>
             {/* Nav Menu End */}
           </div>
