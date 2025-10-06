@@ -50,6 +50,23 @@ const SellerList = () => {
     }
   };
 
+  // ✅ Delete seller function
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this seller?")) return;
+
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/seller/delete/${id}`
+      );
+      if (data.success) {
+        setSellers((prev) => prev.filter((seller) => seller._id !== id));
+        toast.success("Seller deleted successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to delete seller");
+    }
+  };
+
   // pagination logic
   const totalPages = Math.ceil(sellers.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -76,6 +93,7 @@ const SellerList = () => {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Status</th>
+                  <th>Actions</th> {/* ✅ New column */}
                 </tr>
               </thead>
               <tbody>
@@ -97,6 +115,21 @@ const SellerList = () => {
                         }}
                       >
                         {seller.status ? "Inactive" : "Active"}
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(seller._id)}
+                        style={{
+                          backgroundColor: "#e74c3c",
+                          color: "white",
+                          border: "none",
+                          padding: "4px 10px",
+                          borderRadius: "5px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>

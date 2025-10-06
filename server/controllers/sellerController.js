@@ -194,6 +194,23 @@ export const updateStatus = async (req, res) => {
   }
 };
 
+// ✅ New: Delete seller
+export const deleteSeller = async (req, res) => {
+  try {
+    const { id } = req.params; // ID comes from URL
+    const deletedSeller = await Seller.findByIdAndDelete(id);
+
+    if (!deletedSeller) {
+      return res.status(404).json({ success: false, message: "Seller not found" });
+    }
+
+    res.json({ success: true, message: "Seller deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Send OTP : /api/seller/send-otp
 export const sendOtp = async (req, res) => {
   const { email } = req.body;
