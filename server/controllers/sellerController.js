@@ -136,10 +136,10 @@ export const sellerLogout = async (req, res) => {
   }
 };
 
-// Get Seller  : api/seller/seller-list
-
+// ✅ GET all sellers - /api/seller/seller-list
 export const getSellerDetails = async (req, res) => {
   try {
+    // Fetch only required fields
     const sellers = await Seller.find({}, "name email status");
 
     res.status(200).json({
@@ -147,28 +147,50 @@ export const getSellerDetails = async (req, res) => {
       data: sellers,
     });
   } catch (error) {
-    console.error(error);
-
+    console.error("Error fetching sellers:", error.message);
     res.status(500).json({
       success: false,
-      message: error.message || "Server Error",
+      message: "Internal Server Error",
     });
   }
 };
 
-// Change Seller Status: /api/seller/status
+// ✅ UPDATE seller status - /api/seller/update-status
 export const updateStatus = async (req, res) => {
   try {
     const { id, status } = req.body;
-    const result = await Seller.findByIdAndUpdate(
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Seller ID is required",
+      });
+    }
+
+    const updatedSeller = await Seller.findByIdAndUpdate(
       id,
       { status },
       { new: true }
     );
-    res.json({ success: true, message: "Status Updated" });
+
+    if (!updatedSeller) {
+      return res.status(404).json({
+        success: false,
+        message: "Seller not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Seller status updated successfully",
+      data: updatedSeller,
+    });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
+    console.error("Error updating status:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 

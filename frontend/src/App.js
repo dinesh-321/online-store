@@ -30,6 +30,7 @@ import ProductList from "./pages/admin/ProductList";
 import OrderList from "./pages/admin/OrderList";
 import AdminProtectedRoute from "./pages/admin/AdminProtectedRoute";
 import SellerProtectedRoute from "./pages/seller/SellerProtectedRoute";
+import SellerList from "./pages/admin/SellerList";
 
 function App() {
   return (
@@ -80,6 +81,7 @@ function App() {
        <Route exact path='/admin' element={<AdminAuthForm />} />
         <Route exact path='/adminProductList' element={<AdminProtectedRoute><ProductList /></AdminProtectedRoute>} />
         <Route exact path='/adminOrderList' element={<AdminProtectedRoute><OrderList /></AdminProtectedRoute>} />
+        <Route exact path='/sellerList' element={<AdminProtectedRoute><SellerList /></AdminProtectedRoute>} />
        
        
       </Routes>

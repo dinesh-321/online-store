@@ -1,89 +1,127 @@
-import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import { useAppContext } from '../../context/AppContext'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import AdminLayout from "./AdminLayout";
+import "./AdminDashboard.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SellerList = () => {
-
-  const { axios } = useAppContext();
-
   const [sellers, setSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const fetchSellers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/seller/seller-list`
+      );
+      if (data.success) setSellers(data.data || []);
+    } catch (error) {
+      toast.error("Error fetching sellers");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchSellers();
   }, []);
 
-  const fetchSellers = () => {
-    axios.get("http://localhost:4000/api/seller/seller-list")
-      .then(res => {
-        if (res.data.success) {
-          setSellers(res.data.data);
-        }
-      })
-      .catch(err => console.error(err));
-  };
-
-  const handleToggle = (id, currentStatus) => {
+  const handleToggle = async (id, currentStatus) => {
     const updatedStatus = !currentStatus;
-
-    axios.put(`http://localhost:4000/api/seller/update-status`, { id, status: updatedStatus })
-      .then(res => {
-        if (res.data.success) {
-          // update the local state
-          setSellers(prev =>
-            prev.map(seller =>
-              seller._id === id ? { ...seller, status: updatedStatus } : seller
-            )
-          );
-          toast.success('Status Updated');
-        }
-      })
-      .catch(err => console.error(err));
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/seller/update-status`,
+        { id, status: updatedStatus }
+      );
+      if (data.success) {
+        setSellers((prev) =>
+          prev.map((seller) =>
+            seller._id === id ? { ...seller, status: updatedStatus } : seller
+          )
+        );
+        toast.success("Status updated successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
   };
 
+  // pagination logic
+  const totalPages = Math.ceil(sellers.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSellers = sellers.slice(indexOfFirstItem, indexOfLastItem);
 
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
-    return (
-        <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
-            <div className="w-full md:p-10 p-4">
-                <h2 className="pb-4 text-lg font-medium">Seller List</h2>
-                <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-                    <table className="md:table-auto table-fixed w-full overflow-hidden">
-                        <thead className="text-gray-900 text-sm text-left">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold truncate">Name</th>
-                                <th className="px-4 py-3 font-semibold truncate">Email</th>
-                                <th className="px-4 py-3 font-semibold truncate">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-sm text-gray-500">
-                            {sellers.map((seller) => (
-                                <tr key={seller._id} className="border-t border-gray-500/20">
-                                    <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                                        <span className="truncate max-sm:hidden w-full">{seller.name}</span>
-                                    </td>
-                                    <td className="px-4 py-3">{seller.email}</td>
-                                    <td className="px-4 py-3 max-sm:hidden">
-                                       <button
-                                          onClick={() => handleToggle(seller._id, seller.status)}
-                                          style={{
-                                            background: seller.status ? "red" : "green",
-                                            color: "#fff",
-                                            padding: "4px 8px",
-                                            border: "none",
-                                            borderRadius: "4px"
-                                          }}
-                                        >
-                                          {seller.status ? "Inactive" : "Active"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+  return (
+    <AdminLayout page="seller-list">
+      <div className="container mt-4">
+        <h4 className="mb-4">Seller List</h4>
+
+        {loading ? (
+          <p>Loading sellers...</p>
+        ) : sellers.length === 0 ? (
+          <p>No sellers found.</p>
+        ) : (
+          <>
+            <table className="classic-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentSellers.map((seller, index) => (
+                  <tr key={seller._id}>
+                    <td>{indexOfFirstItem + index + 1}</td>
+                    <td>{seller.name}</td>
+                    <td>{seller.email}</td>
+                    <td>
+                      <button
+                        onClick={() => handleToggle(seller._id, seller.status)}
+                        style={{
+                          backgroundColor: seller.status ? "red" : "green",
+                          color: "white",
+                          border: "none",
+                          padding: "4px 10px",
+                          borderRadius: "5px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {seller.status ? "Inactive" : "Active"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, page) => (
+                <button
+                  key={page + 1}
+                  className={currentPage === page + 1 ? "active" : ""}
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  {page + 1}
+                </button>
+              ))}
             </div>
-        </div>
-    );
+          </>
+        )}
+      </div>
+      <ToastContainer position="top-right" autoClose={2000} />
+    </AdminLayout>
+  );
 };
 
-export default SellerList
+export default SellerList;

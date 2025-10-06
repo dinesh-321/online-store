@@ -113,7 +113,7 @@ const SellerAuth = () => {
           <form className="auth-form" onSubmit={handleRegister}>
             <input
               type="text"
-              placeholder="Full Name"
+              placeholder="Vendor Name"
               name="name"
               value={registerData.name}
               onChange={(e) => handleInputChange(e, "register")}
