@@ -1,5 +1,5 @@
 import express from 'express';
-import { addProduct, changeStock, productById, productList ,deleteProduct,productByBarcode,updateProduct,getSingleProduct } from '../controllers/productController.js';
+import { addProduct, changeStock, productById, productList ,deleteProduct,productByBarcode,updateProduct,getSingleProduct,productListSeller } from '../controllers/productController.js';
 import {upload} from '../configs/multer.js';
 import authSeller from '../middlewares/authSeller.js';
 import multer from "multer";
@@ -18,6 +18,10 @@ productRouter.get("/:id", getSingleProduct);
 
 // PUT update product
 productRouter.put("/update/:id", upload.array("images", 4), updateProduct);
+
+
+// ✅ Protect route so only logged-in sellers can access their products
+productRouter.get("/list/seller", authSeller, productListSeller);
 
 
 export default productRouter;

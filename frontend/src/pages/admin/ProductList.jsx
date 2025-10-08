@@ -56,6 +56,7 @@ const ProductList = () => {
                   <th>Image</th>
                   <th>Name</th>
                   <th>Brand</th>
+                  <th>Seller</th> {/* Added seller column */}
                   <th>Price</th>
                   <th>Offer Price</th>
                   <th>Stock</th>
@@ -79,6 +80,7 @@ const ProductList = () => {
                     </td>
                     <td>{product.name}</td>
                     <td>{product.brand}</td>
+                    <td>{product.seller?.name || "N/A"}</td> {/* Display seller name */}
                     <td>₹{product.price}</td>
                     <td>
                       {product.offerPrice ? (

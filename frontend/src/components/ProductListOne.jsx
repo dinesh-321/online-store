@@ -139,6 +139,11 @@ const ProductListOne = () => {
                       <span className="text-gray-900 text-xs fw-medium mt-8">
                         {product.inStock ? `In Stock: ${product.stock}` : "Out of Stock"}
                       </span>
+                      
+                      {/* Vendor Info */}
+                      <p className="text-sm text-gray-500">
+                        Sold by: <span className="fw-medium">{product.seller?.name || "Unknown Vendor"}</span>
+                      </p>
                     </div>
                   </div>
                 </div>

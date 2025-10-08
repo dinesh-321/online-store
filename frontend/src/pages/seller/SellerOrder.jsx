@@ -10,9 +10,19 @@ const SellerOrder = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/order/all`);
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/order/seller/order`,
+          {
+            method: "GET",
+            credentials: "include", // if using cookies for auth
+          }
+        );
         const data = await res.json();
-        setOrders(data);
+        if (data.success) {
+          setOrders(data.orders); // ✅ Fix: use the array, not the whole object
+        } else {
+          console.error("Failed to fetch orders:", data.message);
+        }
       } catch (err) {
         console.error("Failed to fetch orders", err);
       }
@@ -55,7 +65,8 @@ const SellerOrder = () => {
                       <ul className="mb-0">
                         {order.products.map((p, idx) => (
                           <li key={idx}>
-                            {p.name} × {p.quantity} (₹{p.price})
+                            {p.name} × {p.quantity} (₹{p.price}) - Seller:{" "}
+                            {p.sellerName || "N/A"}
                           </li>
                         ))}
                       </ul>

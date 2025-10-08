@@ -13,6 +13,11 @@ const productSchema = new mongoose.Schema(
     brand: { type: String, required: true },
     SubCategory: { type: String, required: true },
     barcode: { type: String, unique: true },
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
+      required: true,
+    },
   },
   { timestamps: true }
 );

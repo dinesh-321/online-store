@@ -5,42 +5,67 @@ import path from "path";
 
 // Add Product : /api/product/add
 export const addProduct = async (req, res) => {
-    try {
-        let productData = JSON.parse(req.body.productData);
-        const images = req.files;
+  try {
+    const sellerId = req.sellerId; // ✅ from middleware
+    const productData = JSON.parse(req.body.productData);
+    const images = req.files;
 
-        let imagesUrl = await Promise.all(
-            images.map(async (item) => {
-                let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
-                return result.secure_url;
-            })
-        );
+    const imagesUrl = await Promise.all(
+      images.map(async (item) => {
+        const result = await cloudinary.uploader.upload(item.path, {
+          resource_type: "image",
+        });
+        return result.secure_url;
+      })
+    );
 
-        // ✅ Ensure barcode is saved with product
-        if (!productData.barcode) {
-            return res.json({ success: false, message: "Barcode is required" });
-        }
-
-        await Product.create({ ...productData, image: imagesUrl });
-
-        res.json({ success: true, message: 'Product Added' });
+    if (!productData.barcode) {
+      return res.json({ success: false, message: "Barcode is required" });
     }
-    catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: error.message });
-    }
+
+    await Product.create({
+      ...productData,
+      image: imagesUrl,
+      seller: sellerId, // ✅ linked automatically
+    });
+
+    res.json({ success: true, message: "Product Added Successfully" });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message });
+  }
 };
 
-// Get product list : /api/product/list 
+// Get all products (for admin or customers): /api/product/list
 export const productList = async (req, res) => {
-    try {
-        const products = await Product.find({});
-        res.json({ success: true, products });
-    }
-    catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: error.message });
-    }
+  try {
+    // ✅ Populate 'seller' field to include seller name & email
+    const products = await Product.find({})
+      .populate("seller", "name email") // only return name & email fields
+      .sort({ createdAt: -1 }); // optional: newest first
+
+    res.json({ success: true, products });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+
+// Get product list for logged-in seller : /api/product/list/seller
+export const productListSeller = async (req, res) => {
+  try {
+    const sellerId = req.sellerId; // ✅ comes from authSeller middleware
+
+    const products = await Product.find({ seller: sellerId }).sort({
+      createdAt: -1,
+    });
+
+    res.json({ success: true, products });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message });
+  }
 };
 
 // Get single Product by ID : /api/product/list/id

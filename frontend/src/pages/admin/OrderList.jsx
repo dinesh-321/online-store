@@ -6,7 +6,7 @@ const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // pagination
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -15,7 +15,9 @@ const OrderList = () => {
       try {
         const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/getOrderList`);
         const data = await res.json();
-        setOrders(data || []);
+
+        // ✅ Use the array inside response
+        setOrders(data.orders || []);
       } catch (err) {
         console.error("Failed to fetch orders", err);
       } finally {
@@ -26,11 +28,13 @@ const OrderList = () => {
     fetchOrders();
   }, []);
 
-  // pagination calculations
+  // Pagination calculations
   const totalPages = Math.ceil(orders.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem);
+  const currentOrders = Array.isArray(orders)
+    ? orders.slice(indexOfFirstItem, indexOfLastItem)
+    : [];
 
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -42,7 +46,7 @@ const OrderList = () => {
 
           {loading ? (
             <p>Loading orders...</p>
-          ) : orders.length === 0 ? (
+          ) : currentOrders.length === 0 ? (
             <p>No orders found.</p>
           ) : (
             <>
@@ -52,6 +56,7 @@ const OrderList = () => {
                     <th>#</th>
                     <th>User</th>
                     <th>Products</th>
+                    <th>Seller</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Payment ID</th>
@@ -59,18 +64,23 @@ const OrderList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentOrders.map((order, index) => (
+                  {currentOrders.map((order, idx) => (
                     <tr key={order._id}>
-                      <td>{indexOfFirstItem + index + 1}</td>
+                      <td>{indexOfFirstItem + idx + 1}</td>
                       <td>{order.userId}</td>
                       <td>
                         <ul style={{ margin: 0, paddingLeft: "18px" }}>
-                          {order.products.map((p, idx) => (
-                            <li key={idx}>
+                          {order.products.map((p, i) => (
+                            <li key={i}>
                               {p.name} × {p.quantity} (₹{p.price})
                             </li>
                           ))}
                         </ul>
+                      </td>
+                      <td>
+                        {order.products
+                          .map((p) => p.seller?.name || "N/A")
+                          .join(", ")}
                       </td>
                       <td>₹{order.amount}</td>
                       <td>
@@ -99,17 +109,19 @@ const OrderList = () => {
               </table>
 
               {/* Pagination */}
-              <div className="pagination">
-                {Array.from({ length: totalPages }, (_, page) => (
-                  <button
-                    key={page + 1}
-                    className={currentPage === page + 1 ? "active" : ""}
-                    onClick={() => handlePageChange(page + 1)}
-                  >
-                    {page + 1}
-                  </button>
-                ))}
-              </div>
+              {totalPages > 1 && (
+                <div className="pagination">
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={currentPage === i + 1 ? "active" : ""}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>

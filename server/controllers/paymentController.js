@@ -51,48 +51,53 @@ export const verifyPayment = async (req, res) => {
       amount,
     } = req.body;
 
+    // ✅ Verify Razorpay signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
-
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(body.toString())
       .digest("hex");
 
-    if (expectedSignature === razorpay_signature) {
-      // ✅ Save order in DB
-      const newOrder = new Order({
-        userId,
-        products,
-        amount,
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id,
-        status: "Paid",
-      });
-      await newOrder.save();
-
-      // ✅ Decrease stock for each product
-      for (const item of products) {
-        const product = await Product.findById(item._id);
-
-        if (!product) {
-          console.error("❌ Product not found:", item._id);
-          continue;
-        }
-
-        if (product.stock < item.quantity) {
-          console.error("⚠️ Not enough stock for:", product.name);
-          return res.status(400).json({ success: false, message: `${product.name} out of stock` });
-        }
-
-        product.stock -= item.quantity;
-        await product.save();
-
-      }
-
-      return res.json({ success: true, order: newOrder });
-    } else {
-      return res.json({ success: false, message: "Invalid signature" });
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
     }
+
+    // ✅ Enrich products with seller info and reduce stock
+    const enrichedProducts = await Promise.all(
+      products.map(async (item) => {
+        const prod = await Product.findById(item._id);
+        if (!prod) throw new Error(`Product not found: ${item._id}`);
+
+        if (prod.stock < item.quantity) {
+          throw new Error(`${prod.name} is out of stock`);
+        }
+
+        // ✅ Decrease product stock
+        prod.stock -= item.quantity;
+        await prod.save();
+
+        return {
+          id: prod._id,
+          name: prod.name,
+          quantity: item.quantity,
+          price: item.price,
+          seller: prod.seller, // ✅ Add seller ID here
+          sellerName: prod.seller.name,
+        };
+      })
+    );
+
+    // ✅ Save order in DB
+    const newOrder = await Order.create({
+      userId,
+      products: enrichedProducts,
+      amount,
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
+      status: "Paid",
+    });
+
+    res.json({ success: true, order: newOrder });
   } catch (err) {
     console.error("Error verifying Razorpay payment:", err);
     res.status(500).json({ error: err.message });

@@ -19,7 +19,10 @@ const SellerProductList = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/product/list`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/product/list/seller`,
+        { withCredentials: true } // ✅ VERY IMPORTANT
+      );
       if (data.success) setProducts(data.products || []);
     } catch (error) {
       toast.error("Error fetching products");

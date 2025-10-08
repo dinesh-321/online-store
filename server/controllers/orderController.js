@@ -164,3 +164,19 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+// ✅ Get all orders containing products of the logged-in seller
+export const getOrdersBySeller = async (req, res) => {
+  try {
+    const sellerId = req.sellerId; // from authSeller middleware
+
+    // Find orders where at least one product belongs to this seller
+    const orders = await Order.find({ "products.seller": sellerId })
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, orders });
+  } catch (err) {
+    console.error("Error fetching orders for seller:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

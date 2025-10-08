@@ -6,7 +6,8 @@ import path from "path";
 // Get product list : /api/product/list 
 export const productList = async (req, res) => {
     try {
-        const products = await Product.find({});
+        // Populate seller name
+        const products = await Product.find({}).populate("seller", "name");
         res.json({ success: true, products });
     }
     catch (error) {

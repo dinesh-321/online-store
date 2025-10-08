@@ -1,6 +1,6 @@
 import  express from 'express';
 import authUser from '../middlewares/authUser.js';
-import { getAllOrders, getUserOrders, placeOrderCOD, placeOrderRazorPay, verifyPayment, getOrdersByUser } from '../controllers/orderController.js';
+import { getAllOrders, getUserOrders, placeOrderCOD, placeOrderRazorPay, verifyPayment, getOrdersByUser,getOrdersBySeller } from '../controllers/orderController.js';
 import authSeller from '../middlewares/authSeller.js';
 
 const orderRouter = express.Router();
@@ -14,5 +14,8 @@ orderRouter.post('/verifyPayment', verifyPayment);
 orderRouter.get("/all", getAllOrders);
 // GET /api/orders/:userId  → get orders by userId
 orderRouter.get("/:userId", getOrdersByUser);
+
+// ✅ Get orders for logged-in seller
+orderRouter.get("/seller/order", authSeller, getOrdersBySeller);
 
 export default orderRouter;
