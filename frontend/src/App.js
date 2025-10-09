@@ -31,6 +31,7 @@ import OrderList from "./pages/admin/OrderList";
 import AdminProtectedRoute from "./pages/admin/AdminProtectedRoute";
 import SellerProtectedRoute from "./pages/seller/SellerProtectedRoute";
 import SellerList from "./pages/admin/SellerList";
+import ContactList from "./pages/admin/ContactList";
 
 function App() {
   return (
@@ -82,6 +83,7 @@ function App() {
         <Route exact path='/adminProductList' element={<AdminProtectedRoute><ProductList /></AdminProtectedRoute>} />
         <Route exact path='/adminOrderList' element={<AdminProtectedRoute><OrderList /></AdminProtectedRoute>} />
         <Route exact path='/sellerList' element={<AdminProtectedRoute><SellerList /></AdminProtectedRoute>} />
+        <Route exact path='/contactList' element={<AdminProtectedRoute><ContactList /></AdminProtectedRoute>} />
        
        
       </Routes>
