@@ -70,7 +70,7 @@ const FlashSalesOne = () => {
             <div className="container container-lg">
                 <div className="section-heading">
                     <div className="flex-between flex-wrap gap-8">
-                        <h5 className="mb-0">Fresh Sales Today</h5>
+                        <h5 className="mb-0">Flash Sales Today</h5>
                         <div className="flex-align gap-16 mr-point">
                             <Link
                                 to="/shop"
