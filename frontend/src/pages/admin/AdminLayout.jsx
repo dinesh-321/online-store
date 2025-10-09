@@ -8,7 +8,7 @@ const AdminLayout = ({ children, page }) => {
     { name: "Product List", href: "/adminProductList" },
     { name: "Order List", href: "/adminOrderList" },
     { name: "Seller List", href: "/sellerList" },
-    // { name: "Contact List", href: "/contactList" },
+    { name: "Contact List", href: "/contactList" },
   ];
 
  const logout = async () => {
